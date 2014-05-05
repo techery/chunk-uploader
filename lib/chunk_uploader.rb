@@ -57,8 +57,12 @@ module ChunkUploader
     File.rename(self.tmpfile_fullpath, self.renamed_file_fullpath_by(filename))
     self.update_attribute :status, STATUS_DONE
     File.open(self.renamed_file_fullpath_by(filename)) do |file|
-      self.attach_file(file)
+      attach_file(file)
     end
+  end
+
+  def attach_file(file)
+    self.update_attribute :file, File.open(file)
   end
 
   private
