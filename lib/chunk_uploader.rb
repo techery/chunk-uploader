@@ -1,9 +1,22 @@
 module ChunkUploader
+  extend ActiveSupport::Concern
 
-  STATUS_UPLOADING = 0
-  STATUS_DONE = 1
+  class InvalidChecksumError < StandardError
+  end
 
-  UPLOADS_FOLDER = "#{::Rails.root}/public/uploads"
+  included do
+    UPLOADS_FOLDER = "#{Rails.root}/public/uploads"
+    enum status: [:without_chunks, :uploading, :finalized]
+
+    after_create do
+      self.make_uploads_folder!
+      self.without_chunks! if self.status.nil?
+    end
+
+    after_destroy do
+      self.remove_uploads_folder!
+    end
+  end
 
   def directory_fullpath
     UPLOADS_FOLDER + "/#{self.id}"
@@ -23,15 +36,12 @@ module ChunkUploader
   end
 
   def append_chunk_to_file! chunk_params
-    raise "Empty chunk" unless chunk_params
-    raise "Chunk id is empty" unless chunk_params[:id]
-    raise "Chunk data is invalid" unless chunk_params[:data].respond_to?(:tempfile)
     self.append_binary_to_file! chunk_params[:id].to_i, chunk_params[:data].tempfile.read
   end
 
   def append_binary_to_file! chunk_id, chunk_binary
-    raise "Can't add data to finalized upload" unless self.status == STATUS_UPLOADING
     set_chunk_id! chunk_id
+    self.uploading! if chunk_id == 1
     File.open(self.tmpfile_fullpath, 'ab') { |file| file.write(chunk_binary) }
   end
 
@@ -48,14 +58,13 @@ module ChunkUploader
   end
 
   def finalize_upload_by! file_params
-    raise "Upload is already finalized" if self.status == STATUS_DONE
-    raise "Empty file params" unless file_params
-    raise "File name is empty" unless file_params[:filename]
-    raise "File checksum is empty" unless file_params[:checksum]
+    unless self.tmpfile_md5_checksum == file_params[:checksum]
+      raise InvalidChecksumError
+    end
+
     filename = file_params[:filename]
-    raise "Invalid file checksum" unless self.tmpfile_md5_checksum == file_params[:checksum]
     File.rename(self.tmpfile_fullpath, self.renamed_file_fullpath_by(filename))
-    self.update_attribute :status, STATUS_DONE
+    self.finalized!
     File.open(self.renamed_file_fullpath_by(filename)) do |file|
       attach_file(file)
     end
@@ -67,7 +76,6 @@ module ChunkUploader
 
   private
     def set_chunk_id! chunk_id
-      raise "Invalid chunk id!" unless self.last_chunk_id + 1 == chunk_id
       self.update_attribute :last_chunk_id, chunk_id
     end
 
