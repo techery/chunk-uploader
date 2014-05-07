@@ -57,7 +57,7 @@ end
 
 ## Usage
 
-Now you can use in the following flow.
+Now you can use it in the following flow.
 
 1. Create video object.
 
