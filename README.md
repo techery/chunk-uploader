@@ -8,7 +8,7 @@ Client breaks file into chunks, sends them with different request, then finalize
 Add it to your Gemfile then run `bundle` to install it.
 
 ```ruby
-gem 'chunk_uploader', git: 'git@bitbucket.org:annabalina/chunk-uploader.git'
+gem 'chunk_uploader', git: 'git@bitbucket.org:techery/chunk-uploader.git'
 bundle install
 ```
 
