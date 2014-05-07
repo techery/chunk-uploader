@@ -1,7 +1,7 @@
 # ChunkUploader
 
 Ruby gem for uploading files in chunks.
-Client breaks file into chunks, sends them with different request, then finalizes them with another request.
+Client breaks file into chunks, sends them with different requests, then finalizes them with another request.
 
 ## Install
 
@@ -16,7 +16,7 @@ bundle install
 
 Imagine, you have a model Video.
 To be able to use this gem, you need to add `:file`, `:status`, `:last_chunk_id` attributes to your Video model.
-Create a migration with the required fields:
+Create a migration to add the required fields:
 
 ```ruby
 change_table :videos do |t|
@@ -75,7 +75,7 @@ Now you can use it in the following flow.
 
     Process request in controller:
 
-    ```ruby
+    ```
     video.append_chunk_to_file!(id: params[:chunk][:id], data: params[:chunk][:data])
     ```
 
@@ -87,6 +87,6 @@ Now you can use it in the following flow.
 
     Process request in controller:
 
-    ```ruby
+    ```
     video.finalize_upload_by!(checksum: params[:video][:checksum], filename: params[:video][:filename])
-```
+    ```
