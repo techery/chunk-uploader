@@ -7,5 +7,6 @@ Gem::Specification.new do |s|
   s.authors     = ["Anna Balina"]
   s.email       = 'ann.balina@gmail.com'
   s.files       = ["lib/chunk_uploader.rb"]
-  s.license       = 'MIT'
+  s.license     = 'MIT'
+  s.add_development_dependency "rspec"
 end
