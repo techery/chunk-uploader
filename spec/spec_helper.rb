@@ -2,6 +2,7 @@ require 'bundler/setup'
 Bundler.setup
 
 require 'chunk_uploader'
+require 'chunk_uploader/compatibility/carrierwave'
 require 'with_model'
 require 'pry'
 

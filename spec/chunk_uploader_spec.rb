@@ -77,7 +77,10 @@ describe "ChunkUploader" do
           end
 
           upload.finalize_upload_by!(checksum: checksum, filename: 'filename.mp4')
+
           expect(upload).to be_finalized
+
+          expect(upload.file["url"]).to eql "#{upload.upload_path}/#{upload.id}/filename.mp4"
         end
       end
 

@@ -11,6 +11,8 @@ shared_context "with_upload" do
 
     model do
       include ChunkUploader
+      include ChunkUploader::Compatibility::CarrierWave
+
       uploads_chunks_to "#{base_path}/tmp/uploads"
     end
   end
