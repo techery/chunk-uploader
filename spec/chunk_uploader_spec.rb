@@ -58,6 +58,54 @@ describe "ChunkUploader" do
 
   end
 
+
+  describe '#finalize_upload_by!' do
+    let(:checksum) { SecureRandom.hex }
+
+    context 'when checksum is valid' do
+      before { upload.stub tmpfile_md5_checksum: checksum }
+
+      context 'and last_chunk_id > 0' do
+        before do
+          upload.append_chunk_to_file!(id: 1, data: chunk_file)
+        end
+
+        it "should finalize upload" do
+          expect(File).to receive(:rename) do |tmpfile_path, renamed_path|
+            expect(tmpfile_path).to eql upload.send(:tmpfile_full_path)
+            expect(renamed_path).to eql upload.send(:renamed_file_full_path_by, 'filename.mp4')
+          end
+
+          upload.finalize_upload_by!(checksum: checksum, filename: 'filename.mp4')
+          expect(upload).to be_finalized
+        end
+      end
+
+      context 'and last_chunk_id is 0' do
+        subject do
+          lambda { upload.finalize_upload_by!(checksum: checksum, filename: 'filename.mp4') }
+        end
+
+        it { should raise_error }
+      end
+    end
+
+    context 'when checksum is invalid' do
+      before do
+        1.upto(3) do |i|
+          upload.append_chunk_to_file!(id: i, data: chunk_file)
+        end
+      end
+
+      subject do
+        lambda { upload.finalize_upload_by!(checksum: 'Invalid checksum', filename: 'filename.mp4') }
+      end
+
+      it { should raise_error ChunkUploader::InvalidChecksumError }
+    end
+  end
+
+
   describe 'path method' do
     before { upload.stub upload_path: 'path/to/upload' }
 
