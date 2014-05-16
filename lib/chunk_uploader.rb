@@ -19,7 +19,7 @@ module ChunkUploader
 
     def append_chunk_to_file!(id:, data:)
       unless last_chunk_id + 1 == id
-        raise InvalidChunkIdError
+        raise InvalidChunkIdError.new('invalid chunk id')
       end
       update_attribute :last_chunk_id, id
       self.uploading! if id == 1
@@ -28,7 +28,7 @@ module ChunkUploader
 
     def finalize_upload_by!(checksum:, filename:)
       unless tmpfile_md5_checksum == checksum
-        raise InvalidChecksumError
+        raise InvalidChecksumError.new('file checksum is invalid')
       end
       if last_chunk_id == 0
         raise 'Upload is still empty'
